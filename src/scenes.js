@@ -14,37 +14,46 @@ Crafty.scene('Game', function() {
     this.occupied[this.player.at().x][this.player.at().y] = true;
 
     // Place a tree at every edge square on our grid
+	var obstacles_total = 0;
+
     for (var x = 0; x < Game.map_grid.width; x++) {
         for (var y = 0; y < Game.map_grid.height; y++) {
             var at_edge = x == 0 || x == Game.map_grid.width - 1 || y == 0 || y == Game.map_grid.height - 1;
 
+			if (this.occupied[x][y]) {
+				continue;
+			}
             if (at_edge) {
                 // Place a tree entity at the current tile
                 Crafty.e('Tree').at(x, y);
                 this.occupied[x][y] = true;
-            } else if (Math.random() < 0.07 && !this.occupied[x][y]) {
+            } else if (Math.random() < 0.07) {
                 // Place a bush or rock entity at the current tile
                 var bush_or_rock = (Math.random() > 0.3) ? 'Bush' : 'Rock'
                 Crafty.e(bush_or_rock).at(x, y);
                 this.occupied[x][y] = true;
+				obstacles_total++;
             }
         }
     }
 
     // Generate villages on hte map in random locations
-    var max_villages = 5;
-    for (var x = 0; x < Game.map_grid.width; x++) {
-        for (var y = 0; y < Game.map_grid.height; y++) {
-
-            if (Math.random() < 0.03) {
-
-
-                if (Crafty('Village').length < max_villages && !this.occupied[x][y]) {
-                    Crafty.e('Village').at(x, y);
-                }
-            }
-        }
-    }
+    var max_villages = Math.ceil(Math.sqrt(((Math.random() % 100) / 30) * obstacles_total * obstacles_total));
+	var x = 0, y = 0, attempts = 0;
+	var prob = 3e-2, max_attempts = 1e+2; // TODO: related?
+	while (Crafty('Village').length < max_villages && attempts < max_attempts) {
+		x = ++x % Game.map_grid.width;
+		y = ++y % Game.map_grid.height;
+		if (x == 0 || y == 0) {
+			attempts++;
+		}
+		if (this.occupied[x][y]) {
+			continue;
+		}
+		if (Math.random() < prob) {
+			Crafty.e('Village').at(x, y);
+		}
+	}
 
     // Play a ringing sound to indicate start of the game
     Crafty.audio.play('ring');
