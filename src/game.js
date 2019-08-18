@@ -13,9 +13,10 @@ Game = {
     },
 
 	viewport: function() {
+		vp = document.getElementById("cr-stage");
 		return {
-			width: window.innerWidth,
-			height: window.innerHeight
+			width: window.innerWidth - vp.offsetLeft,
+			height: window.innerHeight - vp.offsetTop
 		}
 	},
 
